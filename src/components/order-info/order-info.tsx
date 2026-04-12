@@ -1,23 +1,37 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useSelector } from '../../services/store';
+import { getIngredients } from '../../services/slices/ingredientsSlice';
+import { getOrderByNumberApi } from '@api';
+import { TOrder, TIngredient } from '@utils-types';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams<{ number: string }>();
 
-  const ingredients: TIngredient[] = [];
+  const [localOrder, setLocalOrder] = useState<TOrder | null>(null);
 
-  /* Готовим данные для отображения */
+  const ingredients = useSelector(getIngredients);
+
+  const orderFromStore = useSelector((state) =>
+    state.feed.orders.find((item) => item.number === Number(number))
+  );
+
+  useEffect(() => {
+    if (!orderFromStore && number) {
+      getOrderByNumberApi(Number(number))
+        .then((data) => {
+          if (data.orders.length) {
+            setLocalOrder(data.orders[0]);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [orderFromStore, number]);
+
+  const orderData = orderFromStore || localOrder;
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -32,15 +46,11 @@ export const OrderInfo: FC = () => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
           if (ingredient) {
-            acc[item] = {
-              ...ingredient,
-              count: 1
-            };
+            acc[item] = { ...ingredient, count: 1 };
           }
         } else {
           acc[item].count++;
         }
-
         return acc;
       },
       {}
@@ -51,12 +61,7 @@ export const OrderInfo: FC = () => {
       0
     );
 
-    return {
-      ...orderData,
-      ingredientsInfo,
-      date,
-      total
-    };
+    return { ...orderData, ingredientsInfo, date, total };
   }, [orderData, ingredients]);
 
   if (!orderInfo) {

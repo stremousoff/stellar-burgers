@@ -1,25 +1,51 @@
 import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  getConstructorState,
+  clearConstructor
+} from '../../services/slices/constructorSlice';
+import {
+  postOrderThunk,
+  getOrder,
+  getOrderRequest,
+  clearOrder
+} from '../../services/slices/orderSlice';
+import { getUser } from '../../services/slices/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const orderRequest = false;
+  const { bun, ingredients } = useSelector(getConstructorState);
+  const user = useSelector(getUser);
 
-  const orderModalData = null;
+  const orderRequest = useSelector(getOrderRequest);
+  const orderModalData = useSelector(getOrder);
+
+  const constructorItems = { bun, ingredients };
 
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
-  };
-  const closeOrderModal = () => {};
+    if (!bun || orderRequest) return;
+    if (!user) return navigate('/login');
 
+    const dataToPost = [
+      bun._id,
+      ...ingredients.map((item) => item._id),
+      bun._id
+    ];
+    dispatch(postOrderThunk(dataToPost));
+  };
+
+  const closeOrderModal = () => {
+    dispatch(clearOrder());
+    dispatch(clearConstructor());
+    navigate('/', { replace: true });
+  };
+
+  // Добавляем пропущенный расчет цены
   const price = useMemo(
     () =>
       (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
@@ -29,9 +55,6 @@ export const BurgerConstructor: FC = () => {
       ),
     [constructorItems]
   );
-
-  return null;
-
   return (
     <BurgerConstructorUI
       price={price}
