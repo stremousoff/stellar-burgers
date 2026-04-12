@@ -23,12 +23,7 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isProfilePage = location.pathname.startsWith('/profile');
-
-  const background =
-    location.state?.background && !isProfilePage
-      ? location.state.background
-      : undefined;
+  const background = location.state?.background;
 
   useEffect(() => {
     dispatch(getIngredientsThunk());
@@ -126,9 +121,11 @@ const App = () => {
           <Route
             path='/profile/orders/:number'
             element={
-              <Modal title='Заказ' onClose={handleModalClose}>
-                <OrderInfo />
-              </Modal>
+              <ProtectedRoute>
+                <Modal title='Заказ' onClose={handleModalClose}>
+                  <OrderInfo />
+                </Modal>
+              </ProtectedRoute>
             }
           />
         </Routes>
