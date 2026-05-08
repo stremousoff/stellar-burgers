@@ -14,32 +14,30 @@ describe('тестирование конструктора бургера', () 
   });
 
   it('должна работать работа модальных окон ингредиента', () => {
-    // 1. Проверка открытия
-    cy.get('[data-testid="ingredient"]').first().click();
+    // Проверка открытия: выбираем конкретную булку, чтобы избежать ошибок с ценой
+    cy.get('[data-testid="ingredient"]').contains('Краторная булка').click();
     cy.get('[data-testid="modal"]').should('be.visible');
 
-    // 2. Закрытие по нажатию на Esc
+    // Проверка, что в модальном окне именно тот ингредиент, по которому был клик
+    cy.get('[data-testid="modal"]').should('contain', 'Краторная булка');
+
+    // Закрытие по нажатию на Esc
     cy.get('body').type('{esc}');
     cy.get('[data-testid="modal"]').should('not.exist');
 
-    // 3. Снова открываем для проверки оверлея
-    cy.get('[data-testid="ingredient"]').first().click();
-    cy.get('[data-testid="modal"]').should('be.visible');
-
-    // 4. Закрытие по клику на оверлей (пустое место)
-    // Мы используем force: true, так как оверлей может быть перекрыт самим окном
+    // Закрытие по клику на оверлей
+    cy.get('[data-testid="ingredient"]').contains('Краторная булка').click();
     cy.get('[data-testid="modal-overlay"]').click({ force: true });
     cy.get('[data-testid="modal"]').should('not.exist');
 
-    // 5. Снова открываем для проверки крестика (финально)
-    cy.get('[data-testid="ingredient"]').first().click();
+    // Закрытие по клику на крестик
+    cy.get('[data-testid="ingredient"]').contains('Краторная булка').click();
     cy.get('[data-testid="modal-close"]').click();
     cy.get('[data-testid="modal"]').should('not.exist');
   });
 
   it('должен собрать бургер и оформить заказ', () => {
     // 1. Добавление ингредиентов через кнопку "Добавить"
-    // (Используем contains для поиска конкретных названий из ваших моков)
     cy.get('[data-testid="ingredient"]')
       .contains('Краторная булка')
       .parent()
@@ -54,21 +52,29 @@ describe('тестирование конструктора бургера', () 
       .contains('Добавить')
       .click();
 
-    // 2. Проверка, что кнопка оформления заказа стала активной, и клик по ней
+    // 2. Проверка, что в конструкторе содержатся булки (вверху и внизу) и ингредиент
+    cy.get('.constructor-element_pos_top').should('contain', 'Краторная булка');
+    cy.get('.constructor-element_pos_bottom').should(
+      'contain',
+      'Краторная булка'
+    );
+    cy.get('.constructor-element').should('contain', 'Биокотлета');
+
+    // 3. Оформление заказа
     cy.get('button')
       .contains('Оформить заказ')
       .should('not.be.disabled')
       .click();
 
-    // 3. Проверка открытия модального окна и номера заказа
+    // 4. Проверка открытия модального окна и номера заказа
     cy.get('[data-testid="modal"]').should('be.visible');
     cy.get('[data-testid="order-number"]').should('contain', '12345');
 
-    // 4. Закрытие модального окна
+    // 5. Закрытие модального окна
     cy.get('[data-testid="modal-close"]').click();
     cy.get('[data-testid="modal"]').should('not.exist');
 
-    // 5. Проверка, что конструктор очистился (появился текст-заглушка)
+    // 6. Проверка, что конструктор очистился
     cy.get('[data-testid="constructor-drop-target"]').should(
       'contain',
       'Выберите булки'
