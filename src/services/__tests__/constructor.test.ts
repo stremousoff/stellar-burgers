@@ -13,11 +13,35 @@ describe('тестирование редьюсера burgerConstructor', () => 
     price: 100
   } as any;
 
+  const mockBun = {
+    _id: '2',
+    name: 'Краторная булка',
+    type: 'bun',
+    price: 200
+  } as any;
+
   it('должен обрабатывать добавление ингредиента (addIngredient)', () => {
     const newState = reducer(initialState, addIngredient(mockIngredient));
     expect(newState.ingredients.length).toBe(1);
-    expect(newState.ingredients[0].name).toBe('Дикая котлета');
-    expect(newState.ingredients[0].id).toBeDefined();
+    expect(newState.ingredients[0]).toEqual(
+      expect.objectContaining({
+        _id: '1',
+        name: 'Дикая котлета',
+        type: 'main'
+      })
+    );
+    expect(newState.ingredients[0].id).toBeDefined(); // Проверка наличия уникального ID
+  });
+
+  it('должен обрабатывать добавление булки (addIngredient)', () => {
+    const newState = reducer(initialState, addIngredient(mockBun));
+    expect(newState.bun).toEqual(
+      expect.objectContaining({
+        _id: '2',
+        name: 'Краторная булка',
+        type: 'bun'
+      })
+    );
   });
 
   it('должен обрабатывать удаление ингредиента (removeIngredient)', () => {
