@@ -81,7 +81,7 @@
     "ts-jest": "^29.4.9",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
+    "typescript": "~5.7.2",
     "url-loader": "^4.1.1"
   },
   "scripts": {
@@ -92,8 +92,8 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier ./src --write",
     "test": "jest",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:open": "TS_NODE_TRANSPILE_ONLY=true cypress open",
+    "cypress:run": "TS_NODE_TRANSPILE_ONLY=true cypress run"
   },
   "eslintConfig": {
     "extends": [
