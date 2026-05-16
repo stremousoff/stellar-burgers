@@ -10,7 +10,12 @@ describe('тестирование конструктора бургера', () 
     localStorage.setItem('refreshToken', 'test-refreshToken');
 
     // 3. Переход на страницу конструктора
-    cy.visit('http://localhost:4000');
+    cy.visit('/');
+  });
+
+  afterEach(() => {
+    cy.clearCookie('accessToken');
+    cy.clearLocalStorage('refreshToken');
   });
 
   it('должна работать работа модальных окон ингредиента', () => {
